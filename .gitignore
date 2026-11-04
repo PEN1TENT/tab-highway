@@ -1,6 +1,6 @@
-library/
-inbox/
-work/
+library
+inbox
+work
 __pycache__/
 *.pyc
 .DS_Store
