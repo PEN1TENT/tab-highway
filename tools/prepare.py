@@ -28,7 +28,7 @@ except ImportError:  # older PyMuPDF
     import fitz
 
 TARGET_W = 1600          # width of output strips
-MIN_LINE_FRAC = 0.12     # a staff line is an unbroken run at least this share of the width
+MIN_LINE_FRAC = 0.095    # a staff line is an unbroken run at least this share of the width
 
 
 def page_images(pdf_path):
@@ -59,7 +59,7 @@ def find_staves(img):
     dark = g < 180
     W = dark.shape[1]
     # a staff line is a long unbroken dark run; this also finds short final systems
-    rows = [r for r in np.where(dark.sum(1) > W * 0.08)[0] if longest_run(dark[r]) > W * MIN_LINE_FRAC]
+    rows = [r for r in np.where(dark.sum(1) > W * 0.05)[0] if longest_run(dark[r]) > W * MIN_LINE_FRAC]
     lines = []
     for r in rows:
         if lines and r - lines[-1][-1] <= 2:
