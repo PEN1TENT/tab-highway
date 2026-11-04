@@ -1,0 +1,15 @@
+{
+ "format": "tabjson-index",
+ "version": 1,
+ "songs": [
+  {
+   "id": "demo-etude-1",
+   "title": "Highway Etude No. 1",
+   "artist": "tab-highway demo",
+   "bpm": 80,
+   "bars": 9,
+   "status": "verified",
+   "file": "songs/demo-etude-1.tab.json"
+  }
+ ]
+}
