@@ -36,6 +36,7 @@
     "ppq": { "const": 24 },
     "bpm": { "type": "number", "exclusiveMinimum": 0 },
     "ts": { "$ref": "#/$defs/ts" },
+    "feel": { "enum": ["straight", "swing8", "swing16"] },
     "bars": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/bar" } }
   },
   "$defs": {

@@ -200,6 +200,9 @@ let S = null;   // current compiled song
 function compile(song){
   const bars = [], beats = [], notes = [];
   let t = 0, bpm = song.bpm, ts = song.ts || [4,4];
+  // swing: written-straight off-beats are played late (triplet feel)
+  const feel = song.feel || 'straight';
+  const warp = x => feel === 'swing8' && x % 24 === 12 ? x + 4 : feel === 'swing16' && x % 12 === 6 ? x + 2 : x;
   song.bars.forEach((b, i) => {
     if (b.bpm) bpm = b.bpm;
     if (b.ts) ts = b.ts;
@@ -210,7 +213,8 @@ function compile(song){
     for (let k = 0; k < ts[0]; k++) beats.push({t: t + k * beatTicks * spt, bar: i, accent: k === 0, len: beatTicks * spt});
     for (const e of b.ev) {
       if (e.rest || !e.n) continue;
-      for (const n of e.n) notes.push({t: t + e.t * spt, dur: e.d * spt, s: n[0], f: n[1], l: (n[2] === 'h' || n[2] === 's') ? n[2] : '', tech: n[2] || '', bar: i});
+      const t0 = warp(e.t), t1 = warp(e.t + e.d);
+      for (const n of e.n) notes.push({t: t + t0 * spt, dur: (t1 - t0) * spt, s: n[0], f: n[1], l: (n[2] === 'h' || n[2] === 's') ? n[2] : '', tech: n[2] || '', bar: i});
     }
     t += L * spt;
   });
@@ -234,7 +238,7 @@ function loadSong(song){
   const st = m.transcription?.status || '';
   $('status').textContent = st; $('status').className = 'badge ' + st; $('status').style.display = st ? '' : 'none';
   const bpms = [...new Set(S.bars.map(b => b.bpm))];
-  $('meta').textContent = [m.artist, `♩=${bpms.join('→')}`, `${S.bars.length} bars`, `${S.notes.length} notes`, S.capo ? `capo ${S.capo}` : '', m.source?.file ? `from ${m.source.file}` : ''].filter(Boolean).join(' · ');
+  $('meta').textContent = [m.artist, `♩=${bpms.join('→')}`, song.feel && song.feel !== 'straight' ? song.feel.replace('swing', 'swing ') + 'ths' : '', `${S.bars.length} bars`, `${S.notes.length} notes`, S.capo ? `capo ${S.capo}` : '', m.source?.file ? `from ${m.source.file}` : ''].filter(Boolean).join(' · ');
   $('loopA').max = $('loopB').max = S.bars.length;
   $('loopA').value = 1; $('loopB').value = Math.min(4, S.bars.length);
   updateSpeedLabel();

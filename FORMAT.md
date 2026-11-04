@@ -53,6 +53,7 @@ It is built to be:
 | `ppq` | int | ticks per quarter note. **Always 24** in v1 |
 | `bpm` | number | starting tempo (quarter notes per minute) |
 | `ts` | `[num, den]` | starting time signature |
+| `feel` | string, optional | `"straight"` (default), `"swing8"` (8th notes written straight, played as triplet swing: the off-beat 8th moves from tick 12 to 16 of the beat) or `"swing16"` (same for 16ths: tick 6 → 8). Write the notes straight; the player applies the swing |
 | `bars` | array | bars **in playing order** (repeats and D.S./coda written out, not as symbols) |
 
 ## Bars
@@ -113,7 +114,8 @@ The bracketed tied note in the TAB, e.g. `(5)`, is **not** written again.
 2. strings 1–6, frets 0–24, `t` and `d` positive integers, events sorted.
 3. **Bar coverage:** the union of all `[t, t+d)` intervals (rests included) must
    cover the bar from 0 to its length **with no gaps**, and no event may *start*
-   at or after the bar end. Only tied notes may run past the bar line.
+   at or after the bar end. Only tied notes may run past the bar line; a note tied
+   over the bar line also covers the start of the next bar.
    A misread rhythm almost always breaks this rule, so it catches most transcription mistakes.
 
 Writing every rest explicitly (`{"t":0,"d":48,"rest":true}`) is what makes check 3 possible.

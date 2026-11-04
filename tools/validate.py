@@ -38,6 +38,8 @@ def check_song(song):
         errs.append("meta.title missing")
     if not isinstance(song.get("bpm"), (int, float)) or song["bpm"] <= 0:
         errs.append("bpm must be > 0")
+    if song.get("feel", "straight") not in ("straight", "swing8", "swing16"):
+        errs.append('feel must be "straight", "swing8" or "swing16"')
     ts = song.get("ts")
     if not (isinstance(ts, list) and len(ts) == 2):
         errs.append("ts must be [num, den]")
@@ -47,6 +49,7 @@ def check_song(song):
         errs.append("bars missing/empty")
         return errs
 
+    carry = 0  # ticks a tied note from the previous bar runs into this one
     for i, bar in enumerate(bars, 1):
         where = f"bar {i}" + (f" (sheet {bar['src']})" if "src" in bar else "")
         if "ts" in bar:
@@ -92,15 +95,16 @@ def check_song(song):
                 if len(strings) != len(set(strings)):
                     errs.append(f"{where} ev {j}: two notes on the same string")
             spans.append((t, t + d))
-        # coverage: [0, L) must be covered without gaps
+        # coverage: [0, L) must be covered without gaps (a tie from the previous bar counts)
         spans.sort()
-        reach = 0
+        reach = carry
         for a, b in spans:
             if a > reach:
                 errs.append(f"{where}: gap from tick {reach} to {a} (missing rest or wrong length?)")
             reach = max(reach, b)
         if reach < L:
             errs.append(f"{where}: bar ends early at tick {reach} of {L} (missing rest or wrong length?)")
+        carry = max(0, reach - L)
     return errs
 
 
