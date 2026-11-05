@@ -33,6 +33,12 @@ so keep N small and stop cleanly if the session is getting long.
 3. **Cut it into strips:** `python tools/prepare.py inbox/NNN_*.pdf --out work`
    → `work/NNN/header.png` + `sys01.png, sys02.png …` (one system = notation + TAB each).
 
+   Then make cheaper images to read (pick one, see `python tools/view.py -h`):
+   - `python tools/view.py group NNN` → `g01.png …` 3 strips per image. **Default**: ~1/3 the reads.
+   - `python tools/view.py halves NNN` → `h01.png …` full-size halves, for dense 32nds/triplets.
+   - `python tools/view.py slice NNN` → `c01.png …` raw page chunks, when a strip shows notation
+     without its TAB (prepare.py mis-paired widely spaced systems).
+
 4. **Read `header.png`** for title, artist, tempo (♩=), time signature, capo, tuning
    (e.g. "Drop D" → `[64,59,55,50,45,38]`, capo 2 → `"capo": 2`).
 
@@ -56,7 +62,10 @@ so keep N small and stop cleanly if the session is getting long.
    - Don't guess silently. If a spot is unreadable, write your best reading and list
      the bar in `meta.transcription.notes`, then set `status` to `"needs-review"`.
 
-6. **Write the file** `library/songs/NNN.tab.json`:
+6. **Write the file** `library/songs/NNN.tab.json`. Easiest: a small script using `tools/dsl.py`
+   (`N(t, d, "e0 B1 D2")`, reuse repeated bars with `B[k] = B[j]`, then `build(...)`), kept in
+   `work/build/bNNN.py` so a fix is a one-line edit and re-run.
+   Required fields:
    - `id` = `"NNN"`, `meta.source` = `{"file": "<pdf name>", "drive_id": "<id>"}`,
      `meta.transcription` = `{"by": "<model name>", "date": "<today>", "status": "draft", "notes": "..."}`.
    - For long songs, write it in pieces: write the first systems, run
@@ -75,6 +84,9 @@ so keep N small and stop cleanly if the session is getting long.
 9. Delete `work/NNN/` and the PDF from `inbox/` when the song is committed.
 
 ## At the end of the run
+
+Long or very dense songs (70+ bars of 16ths) can take most of a session on their own: if one
+is next and the session already holds many images, stop and report instead of starting it.
 
 Report: songs added (id, title, bars, status), songs skipped and why, and the bars
 you flagged for review. Nothing else.
