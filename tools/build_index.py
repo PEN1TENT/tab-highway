@@ -13,8 +13,12 @@ def main(argv):
         print(__doc__)
         return 1
     lib = Path(argv[0])
+    songs_dir = lib / "songs"
+    if not songs_dir.is_dir():
+        print(f"error: {songs_dir} not found (pass the library root folder, e.g. library or demo)", file=sys.stderr)
+        return 1
     songs = []
-    for f in sorted((lib / "songs").glob("*.tab.json")):
+    for f in sorted(songs_dir.glob("*.tab.json")):
         s = json.loads(f.read_text(encoding="utf-8"))
         m = s.get("meta", {})
         songs.append({

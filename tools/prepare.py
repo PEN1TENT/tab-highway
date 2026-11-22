@@ -33,15 +33,15 @@ MIN_LINE_FRAC = 0.095    # a staff line is an unbroken run at least this share o
 
 def page_images(pdf_path):
     """Yield one PIL image per page (embedded image if the page is just a picture)."""
-    doc = fitz.open(pdf_path)
-    for page in doc:
-        imgs = page.get_images(full=True)
-        if len(imgs) == 1 and not page.get_text().strip():
-            x = doc.extract_image(imgs[0][0])
-            yield Image.open(io.BytesIO(x["image"])).convert("RGB")
-        else:
-            pix = page.get_pixmap(dpi=200)
-            yield Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+    with fitz.open(pdf_path) as doc:
+        for page in doc:
+            imgs = page.get_images(full=True)
+            if len(imgs) == 1 and not page.get_text().strip():
+                x = doc.extract_image(imgs[0][0])
+                yield Image.open(io.BytesIO(x["image"])).convert("RGB")
+            else:
+                pix = page.get_pixmap(dpi=200)
+                yield Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
 
 
 def longest_run(row):
@@ -86,7 +86,10 @@ def group_systems(staves):
     if not staves:
         return []
     sp = [(s[-1] - s[0]) / (len(s) - 1) for s in staves]
-    narrow = min(sp)
+    sp_sorted = sorted(sp)
+    med = sp_sorted[len(sp_sorted) // 2]
+    valid_sp = [x for x in sp_sorted if x >= med * 0.45]
+    narrow = valid_sp[0] if valid_sp else sp_sorted[0]
     is_tab = [x > narrow * 1.25 for x in sp]
     if not any(is_tab):          # only one kind of staff on the page: treat all as TAB
         is_tab = [True] * len(staves)
@@ -118,7 +121,9 @@ def crop_systems(img, systems):
         else:
             a = (systems[k - 1][1] + top) // 2
         b = (bot + systems[k + 1][0]) // 2 if k + 1 < len(systems) else min(H, int(bot + sp * 4))
-        out.append(img.crop((0, int(a), img.width, int(b))))
+        a = max(0, min(H - 1, int(a)))
+        b = max(a + 1, min(H, int(b)))
+        out.append(img.crop((0, a, img.width, b)))
     return out
 
 

@@ -21,7 +21,10 @@ def main(argv):
     d = json.loads(raw[raw.index("{"):])
     out = Path(argv[1] if len(argv) > 1 else "inbox")
     out.mkdir(parents=True, exist_ok=True)
-    name = d.get("title") or f"{d['id']}.pdf"
+    raw_name = d.get("title") or f"{d['id']}.pdf"
+    name = Path(raw_name.replace("/", "_").replace("\\", "_")).name
+    if not name or name in (".", ".."):
+        name = f"{d['id']}.pdf"
     p = out / name
     p.write_bytes(base64.b64decode(d["content"]))
     (out / (name + ".drive_id")).write_text(d.get("id", ""))
